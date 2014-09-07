@@ -1,0 +1,11 @@
+{% extends "layout.html" %}
+{% block title %} DB items{% endblock %}
+{% block content %}
+<ul>
+{% for v in rv %}
+	<li>{{ v }}
+{% else %}
+	<li><em>No entries here yet.</em>
+{% endfor %}
+</ul>
+{% endblock %}

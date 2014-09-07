@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+  <head>
+    {% block head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>O App{% block title %}{% endblock %}</title>
+    {% endblock %}
+  </head>
+  <body>
+    <div class="container">
+        <div id="content">
+            {% block content %}{% endblock %}
+        </div>
+        <div id="footer">
+          <hr />
+          {% block footer %}
+          Created for <a href="http://www.cascadeoc.org">COC</a> by <a href="http://www.ercjns.com">Eric Jones</a> &copy 2014.
+          {% endblock %}
+        </div>
+    </div>
+  </body>
+</html>

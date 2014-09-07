@@ -1,0 +1,23 @@
+div.container {
+	width: 85%;
+	margin-left: auto;
+	margin-right: auto;
+}
+p {
+	color: black;
+}
+img {
+	max-width: 85%;
+}
+
+@media screen and (min-width: 650px) {
+	div.container {
+		width: 90%;
+	}
+}
+
+@media screen and (min-width: 975px) {
+	div.container{
+		width: 944px;
+	}
+}
