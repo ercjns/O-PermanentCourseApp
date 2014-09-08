@@ -1,16 +1,16 @@
 {% extends "layout.html" %}
-{% block title %} - {{ venue }}{% endblock %}
+{% block title %} - {{ venuename }}{% endblock %}
 {% block content %}
-<h1>Orienteering at {{ venue }}</h1>
+<h1>Orienteering at {{ venuename }}</h1>
 <h3>What is Orienteering?</h3>
 	<p> Orienteering chellenges people of every age to find their way through a set of checkpoints using only a map and compass.
-		Cascade Orienteering Club has set up a permanent course here at {{ venue }} which you can try out right now.
+		Cascade Orienteering Club has set up a permanent course here at {{ venuename }} which you can try out right now.
 		You'll use your phone to view an orienteering-style map and will skip the compass for now.
 		In city parks many orienteers skip using a compass becuase there are so many unique features to help orient the map.
-		What are you waiting for? <a href={{ url_for('init_course', venue=venue, course=1) }}>Try it out!</a>
+		What are you waiting for? <a href={{ url_for('init_course', venuecode=venuecode, course=1) }}>Try it out!</a>
 <h3>Try it out now!</h3>
 	<p> {{ venue }} has 3 pre-set courses. We suggest you start with the beginner course, and try the others if you have time. :)
-		<p><a href={{ url_for('init_course', venue=venue, course=1) }}>Beginner</a>
-		<p><a href={{ url_for('init_course', venue=venue, course=2) }}>Intermediate</a>
-		<p><a href={{ url_for('init_course', venue=venue, course=3) }}>Advanced</a>
+		<p><a href={{ url_for('init_course', venuecode=venuecode, course=1) }}>Beginner</a>
+		<p><a href={{ url_for('init_course', venuecode=venuecode, course=2) }}>Intermediate</a>
+		<p><a href={{ url_for('init_course', venuecode=venuecode, course=3) }}>Advanced</a>
 {% endblock %}

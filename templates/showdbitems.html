@@ -1,9 +1,10 @@
 {% extends "layout.html" %}
 {% block title %} DB items{% endblock %}
 {% block content %}
+{{ head }}
 <ul>
-{% for v in rv %}
-	<li>{{ v }}
+{% for row in rows %}
+	<li>{{ row }}
 {% else %}
 	<li><em>No entries here yet.</em>
 {% endfor %}
