@@ -77,8 +77,8 @@ def dbstr_to_str(dbstr):
 @app.route('/viewdb')
 def show_runners():
 	runners = query_db('SELECT id, venuecode, course, punch FROM runners')
-	if runners is None:
-		return "not found"
+	if len(runners) == 0:
+		return "oops, looks like the DB is empty."
 	else:
 		rows = [d.values() for d in runners]
 		head = d.keys()
@@ -89,14 +89,11 @@ def show_runners():
 def index():
 	'''page should display general information about what courses are avaiable'''
 	courses = query_db('SELECT * FROM courses')
-	rows = [d.values() for d in courses]
-	head = d.keys()
-	return render_template("showdbitems.html", rows=rows, head=head)
-
+	return render_template("index.html")
 
 
 @app.route('/<venuecode>/')
-def start(venuecode):
+def venue(venuecode):
 	'''look up the code in the db, get the name + courses, display it
 	if the code is not valid, redirect to a landing page'''
 	#to-do: get the courses here, not all have three
@@ -140,33 +137,46 @@ def visit_control(venuecode, control):
 
 	runnerid = session['runnerID']
 	if runnerid == None:
-		return redirect(url_for('start', venuecode=venuecode))
+		return redirect(url_for('venue', venuecode=venuecode))
 
 	runner = query_db("SELECT * FROM runners WHERE id = ?", [runnerid], True)
 	course = query_db("SELECT * FROM courses WHERE venuecode=? AND course=?",
 					  [runner['venuecode'], runner['course']], True)
 	controls = [int(a.strip(',')) for a in str(course['controls']).split()]
-	correctthru = controls.index(runner['punch_on_course'])
-	nextcontrol = controls[correctthru+1]
 
-	if control == nextcontrol:
-		#correct case
-
-		#to-do this fails in the FINISHED case! Fix it!
-
+	if (control == controls[-1]) and (controls.index(runner['punch_on_course']) == len(controls)-2):
+		#finish case
+		#to-do add a "finished" state to the db so re-loads don't mess up.
 		query_db('UPDATE runners SET punch=?, punch_on_course=? WHERE id=?',
-				 [control, control, runner['id']])
+				[control, control, runner['id']])
 		get_db().commit()
-		nextcontrol = controls[correctthru+2]
-		message = ''
+		nextcontrol = None
+		message = 'Congrats, you finished!'
+
+	elif (controls.index(control)-1 == controls.index(runner['punch_on_course'])):
+		#on course case
+		query_db('UPDATE runners SET punch=?, punch_on_course=? WHERE id=?',
+				[control, control, runner['id']])
+		get_db().commit()
+		nextcontrol = controls[controls.index(control)+1]
+		message = 'Keep going!'
+
+
+	elif control == 101:
+		#start case don't need to do anything
+		# future iteration may need to set punch and punch on course
+		# it feels like those should move here from the init_course function.
+		#query_db('UPDATE runners SET punch=? WHERE id=?', [control, runner['id']])
+		#get_db().commit()
+		nextcontrol = controls[1]
+		message = "Just getting started? Good luck and have fun!"
 
 
 	else:
-		#start or incorrect case
-		#update punch
-		#show an error message unless start control.
+		#incorrect case
 		query_db('UPDATE runners SET punch=? WHERE id=?', [control, runner['id']])
 		get_db().commit()
+		nextcontrol = controls[controls.index(runner['punch_on_course'])+1]
 		message = "You're off course!"
 
 

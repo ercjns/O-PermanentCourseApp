@@ -1,0 +1,9 @@
+{% extends "layout.html" %}
+{% block title %}{% endblock %}
+{% block content %}
+<h1>Orienteering Webapp!</h1>
+<p>If you're at one of these parks, try it out!
+<ul>
+	<li><a href={{ url_for('venue', venuecode='mag') }}>Magnuson</a>
+</ul>
+{% endblock %}
