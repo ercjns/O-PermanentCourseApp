@@ -9,8 +9,9 @@
 		In city parks many orienteers skip using a compass becuase there are so many unique features to help orient the map.
 		What are you waiting for? <a href={{ url_for('init_course', venuecode=venuecode, course=1) }}>Try it out!</a>
 <h3>Try it out now!</h3>
-	<p> {{ venue }} has 3 pre-set courses. We suggest you start with the beginner course, and try the others if you have time. :)
-		<p><a href={{ url_for('init_course', venuecode=venuecode, course=1) }}>Beginner</a>
-		<p><a href={{ url_for('init_course', venuecode=venuecode, course=2) }}>Intermediate</a>
-		<p><a href={{ url_for('init_course', venuecode=venuecode, course=3) }}>Advanced</a>
+	<p> {{ venuename }} has pre-set courses. We suggest you start with the beginner course, and try the others if you have time. :)
+
+		{% for course in courses %}
+			<p><a href={{ url_for('init_course', venuecode=venuecode, course=course['course']) }}> {{ course['course_name'] }}</a> ({{ course['distance'] }})
+		{% endfor %}
 {% endblock %}

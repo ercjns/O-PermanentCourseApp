@@ -8,21 +8,26 @@ CREATE TABLE courses(
 	course INTEGER not NULL,
 	start INTEGER not NULL,
 	controls TEXT not NULL,
-	finish INTEGER not NULL
+	finish INTEGER not NULL,
+	course_name TEXT not NULL,
+	distance TEXT not NULL
+
 );
 **************************************/
 
 
 -- Manguson Park --
--- this is fake for testing --
+-- --
 INSERT INTO courses VALUES (
 	11,
 	'mag',
 	'Magnuson Park',
 	1,
-	101,
-	'101, 102, 103, 104, 105, 106',
-	106
+	0,
+	'0, 31, 32, 33, 34, 35, 36, 999',
+	999,
+	'Course 1',
+	'1.4 km'
 );
 
 INSERT INTO courses VALUES (
@@ -30,9 +35,11 @@ INSERT INTO courses VALUES (
 	'mag',
 	'Magnuson Park',
 	2,
-	101,
-	'101, 105, 107, 108, 106',
-	106
+	0,
+	'0, 42, 43, 33, 44, 45, 46, 40, 47, 41, 999',
+	999,
+	'Course 2',
+	'1.7 km'
 );
 
 INSERT INTO courses VALUES (
@@ -40,7 +47,23 @@ INSERT INTO courses VALUES (
 	'mag',
 	'Magnuson Park',
 	3,
-	101,
-	'101, 111, 115, 114, 113, 104, 102, 117, 126, 106',
-	106
+	0,
+	'0, 36, 37, 38, 39, 40, 35, 41, 43, 32, 999',
+	999,
+	'Course 3',
+	'2.8 km'
+);
+
+-- Not Magnuson Park --
+-- --
+INSERT INTO courses VALUES (
+	21,
+	'fts',
+	'Ft. Steilacoom Park',
+	1,
+	0,
+	'0, 36, 40, 37, 35, 32, 999',
+	999,
+	'Course 1',
+	'1.8 km'
 );

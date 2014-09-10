@@ -76,7 +76,7 @@ def dbstr_to_str(dbstr):
 
 @app.route('/viewdb')
 def show_runners():
-	runners = query_db('SELECT id, venuecode, course, punch FROM runners')
+	runners = query_db('SELECT * FROM runners')
 	if len(runners) == 0:
 		return "oops, looks like the DB is empty."
 	else:
@@ -97,14 +97,19 @@ def venue(venuecode):
 	'''look up the code in the db, get the name + courses, display it
 	if the code is not valid, redirect to a landing page'''
 	#to-do: get the courses here, not all have three
-	rv = query_db('SELECT venue_fullname FROM courses WHERE venuecode = ?', [venuecode], True)
-	if rv is None:
+	courses = query_db('SELECT venuecode, venue_fullname, course, course_name, distance FROM courses WHERE venuecode = ?', [venuecode])
+	if courses is None:
 		#should probably error here, but for now redirect
 		return redirect(url_for('index'))
-	venuename = str(rv['venue_fullname'])
+
+	venuename = str(courses[0]['venue_fullname'])
+	venuecode = str(courses[0]['venuecode'])
+
+
 	return render_template('venuehome.html',
 							venuecode=venuecode,
-							venuename=venuename)
+							venuename=venuename,
+							courses = courses)
 
 
 @app.route('/<venuecode>/start/<int:course>')
@@ -116,17 +121,20 @@ def init_course(venuecode, course):
 
 	#to-do VALIDATE that venue and course are valid values!!!
 	#add a row to the runners table
-	sql = 'INSERT INTO runners (venuecode, course, punch, punch_on_course) '
-	sql += 'VALUES (?, ?, ?, ?)'
+	sql  = 'INSERT INTO runners '
+	sql += '(venuecode, course, finished) '
+	sql += 'VALUES (?, ?, ?)'
+	sqlvals = [venuecode, course, 0]
+
 	c = get_db().cursor()
-	c.execute(sql, [venuecode, course, 101, 101])
+	c.execute(sql, sqlvals)
 	get_db().commit()
 	#create a session with the id
 	session['runnerID'] = c.lastrowid
 	#redirect to the first control
 	return redirect(url_for('visit_control',
 							venuecode=venuecode,
-							control=101))
+							control=0))
 
 
 @app.route('/<venuecode>/<int:control>/')
@@ -144,14 +152,29 @@ def visit_control(venuecode, control):
 					  [runner['venuecode'], runner['course']], True)
 	controls = [int(a.strip(',')) for a in str(course['controls']).split()]
 
-	if (control == controls[-1]) and (controls.index(runner['punch_on_course']) == len(controls)-2):
-		#finish case
-		#to-do add a "finished" state to the db so re-loads don't mess up.
+	if (control == controls[0]) and (runner['punch_on_course'] == None):
+		#START case
 		query_db('UPDATE runners SET punch=?, punch_on_course=? WHERE id=?',
 				[control, control, runner['id']])
 		get_db().commit()
+		nextcontrol = controls[1]
+		message = "Just getting started? Good luck and have fun!"
+
+	elif (control == controls[-1]) and (controls.index(runner['punch_on_course']) == len(controls)-2):
+		#FINISH case
+		#to-do add a "finished" state to the db so re-loads don't mess up.
+		query_db('UPDATE runners SET punch=?, punch_on_course=?, finished=? WHERE id=?',
+				[control, control, 1, runner['id']])
+		get_db().commit()
 		nextcontrol = None
 		message = 'Congrats, you finished!'
+
+	elif runner['finished'] == 1:
+		#FINISHED case
+		nextcontrol = None
+		url = url_for('venue', venuecode=venuecode)
+		message = 'You already finished. Go to ' + url + ' to try another course.'
+		return 'You already finished. Go to ' + url + ' to try another course.'
 
 	elif (controls.index(control)-1 == controls.index(runner['punch_on_course'])):
 		#on course case
@@ -160,17 +183,6 @@ def visit_control(venuecode, control):
 		get_db().commit()
 		nextcontrol = controls[controls.index(control)+1]
 		message = 'Keep going!'
-
-
-	elif control == 101:
-		#start case don't need to do anything
-		# future iteration may need to set punch and punch on course
-		# it feels like those should move here from the init_course function.
-		#query_db('UPDATE runners SET punch=? WHERE id=?', [control, runner['id']])
-		#get_db().commit()
-		nextcontrol = controls[1]
-		message = "Just getting started? Good luck and have fun!"
-
 
 	else:
 		#incorrect case
