@@ -88,8 +88,14 @@ def show_runners():
 @app.route('/')
 def index():
 	'''page should display general information about what courses are avaiable'''
-	courses = query_db('SELECT * FROM courses')
-	return render_template("index.html")
+	locs = query_db('SELECT venuecode, venue_fullname FROM courses')
+	venues = []
+	for d in locs:
+		venues.append((d['venuecode'], d['venue_fullname']))
+
+	venues = list(set(venues))
+	
+	return render_template("index.html", venues=venues)
 
 
 @app.route('/<venuecode>/')

@@ -4,6 +4,8 @@
 <h1>Orienteering Webapp!</h1>
 <p>If you're at one of these parks, try it out!
 <ul>
-	<li><a href={{ url_for('venue', venuecode='mag') }}>Magnuson</a>
+	{% for v in venues %}
+	<li><a href={{ url_for('venue', venuecode=v[0]) }}>{{ v[1] }}</a>
+	{% endfor %}
 </ul>
 {% endblock %}
