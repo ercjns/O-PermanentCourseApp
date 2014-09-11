@@ -1,10 +1,10 @@
 {% extends "layout.html" %}
 {% block title %} - Control {{ control }}{% endblock %}
 {% block content %}
-<p>Orienteering <em>course {{ coursename }}</em> at {{ venuename }}.
+<h3><em>{{ coursename }}</em> at {{ venuename }}.</h3>
 <p><strong>Navigate to control {{ next }}.</strong>
 <p><img src={{ url_for('static', filename="maps/"+venuecode+"_"+control+"_"+next+".png") }} >
-<p>You're at control {{ control }}. {{ message }} 
-<p>See the full map
+<p>You're at control {{ control }}. {{ message }}
+<p><a href={{ url_for('static', filename="maps/"+venuecode+"_c"+course+".png") }}> See the full map</a>
 <p>Start over?
 {% endblock %}

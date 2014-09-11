@@ -88,29 +88,30 @@ def show_runners():
 @app.route('/')
 def index():
 	'''page should display general information about what courses are avaiable'''
+	print "INDEX FUNCTION"
 	locs = query_db('SELECT venuecode, venue_fullname FROM courses')
 	venues = []
 	for d in locs:
 		venues.append((d['venuecode'], d['venue_fullname']))
-
 	venues = list(set(venues))
-	
 	return render_template("index.html", venues=venues)
 
 
-@app.route('/<venuecode>/')
+@app.route('/<venuecode>')
 def venue(venuecode):
 	'''look up the code in the db, get the name + courses, display it
 	if the code is not valid, redirect to a landing page'''
+	print "VENUE FUNCTION"
 	#to-do: get the courses here, not all have three
 	courses = query_db('SELECT venuecode, venue_fullname, course, course_name, distance FROM courses WHERE venuecode = ?', [venuecode])
 	if courses is None:
 		#should probably error here, but for now redirect
 		return redirect(url_for('index'))
 
+	print courses
+
 	venuename = str(courses[0]['venue_fullname'])
 	venuecode = str(courses[0]['venuecode'])
-
 
 	return render_template('venuehome.html',
 							venuecode=venuecode,
@@ -122,8 +123,6 @@ def venue(venuecode):
 def init_course(venuecode, course):
 	''' to start a coruse, add a row to the runners table,
 	set a session on the client, and re-direct to the proper control page'''
-
-	print('FUNCTION: INIT COURSE', course)
 
 	#to-do VALIDATE that venue and course are valid values!!!
 	#add a row to the runners table
@@ -143,11 +142,13 @@ def init_course(venuecode, course):
 							control=0))
 
 
-@app.route('/<venuecode>/<int:control>/')
+@app.route('/<venuecode>/<int:control>')
 def visit_control(venuecode, control):
 	print('FUNCTION: VISIT CONTROL', control)
 
-	#to-do VALIDATE that venuecode and control are valid values!!!
+	#to-do VALIDATE that venuecode and control are valid values
+	#to-do Case for visiting the same control twice in a row (page reload)
+	#to-do Show a map when you're off course...
 
 	runnerid = session['runnerID']
 	if runnerid == None:
@@ -201,7 +202,8 @@ def visit_control(venuecode, control):
 	return render_template('controloncourse.html',
 						venuename = str(course['venue_fullname']),
 						venuecode = course['venuecode'],
-						coursename = str(course['course']),
+						coursename = str(course['course_name']),
+						course = str(course['course']),
 						control = str(control),
 						next = str(nextcontrol),
 						message = message)

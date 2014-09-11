@@ -7,17 +7,23 @@ p {
 	color: black;
 }
 img {
-	max-width: 85%;
+	min-width: 250px;
 }
 
 @media screen and (min-width: 650px) {
 	div.container {
 		width: 90%;
 	}
+	img {
+		max-width: 85%;
+	}
 }
 
 @media screen and (min-width: 975px) {
 	div.container{
 		width: 944px;
+	}
+	img {
+		max-width: 85%;
 	}
 }
