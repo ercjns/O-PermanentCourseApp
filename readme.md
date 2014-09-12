@@ -15,6 +15,7 @@ Features
 To Do
 -----
 * error handling and data validation
+* record every control visited in db
 * time taken to complete course
 * testing on small devices - make maps look great
 * deploy to a live webserver

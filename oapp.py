@@ -1,19 +1,23 @@
-#TODO
-# update db schema to keep track of all control visits
-# update db to know last known on-course control
-# implement second table for storing course definitions
-	# load maps correctly
-	# do lots of other magic / logic
+################################################
+# Permanent Orienteering Course WebApp
+#
+#    (c) 2014 Eric Jones
+#    Licensed under the MIT License
+#    https://github.com/ercjns/o-webapp
+################################################
 
-#commands:
-#go to directory
-# setting a path for my orienteering app settings to be loaded from
-# OAPP_TEST_SETTINGS='/home/eric/code/oapp/config.ini'
-#start the viretual envrionment (. venv/bin/activate)
-#python prompt from oapp import init_db
-#init_db()
-#quit python, run the app
 
+# set-up commands:
+# set an environment variable to load configs from:
+# export OAPP_TEST_SETTINGS='/home/eric/code/oapp/config.ini'
+# start the viretual envrionment:
+# . venv/bin/activate
+# open a python prompt and init the db:
+# >>> from oapp import init_db, update_course_db()
+# >>> init_db()
+# >>> update_course_db()
+# quit that python prompt, run the app from the console:
+# python oapp.py
 
 
 # imports
@@ -21,10 +25,15 @@ import sqlite3
 from contextlib import closing
 from flask import Flask, render_template, url_for, redirect, g, session
 
-#create the application
-
+# Create the Flask application
 app =  Flask(__name__)
 app.config.from_envvar('OAPP_TEST_SETTINGS', silent=True)
+
+
+
+################################################
+# Set up the databases, define database access functions
+################################################
 
 def connect_db():
 	return sqlite3.connect(app.config['DATABASE'])
@@ -71,19 +80,11 @@ def query_db(query, args=(), one=False):
 	cur.close()
 	return rv
 
-def dbstr_to_str(dbstr):
-	pass
 
-@app.route('/viewdb')
-def show_runners():
-	runners = query_db('SELECT * FROM runners')
-	if len(runners) == 0:
-		return "oops, looks like the DB is empty."
-	else:
-		rows = [d.values() for d in runners]
-		head = d.keys()
-		return render_template("showdbitems.html", rows=rows, head=head)
 
+################################################
+# Webapp Routes
+################################################
 
 @app.route('/')
 def index():
@@ -94,22 +95,20 @@ def index():
 	for d in locs:
 		venues.append((d['venuecode'], d['venue_fullname']))
 	venues = list(set(venues))
-	return render_template("index.html", venues=venues)
+
+	return render_template("index.html",
+							venues=venues)
 
 
 @app.route('/<venuecode>')
 def venue(venuecode):
 	'''look up the code in the db, get the name + courses, display it
 	if the code is not valid, redirect to a landing page'''
-	print "VENUE FUNCTION"
-	#to-do: get the courses here, not all have three
+
 	courses = query_db('SELECT venuecode, venue_fullname, course, course_name, distance FROM courses WHERE venuecode = ?', [venuecode])
-	if courses is None:
+	if len(courses) == 0:
 		#should probably error here, but for now redirect
 		return redirect(url_for('index'))
-
-	print courses
-
 	venuename = str(courses[0]['venue_fullname'])
 	venuecode = str(courses[0]['venuecode'])
 
@@ -125,7 +124,7 @@ def init_course(venuecode, course):
 	set a session on the client, and re-direct to the proper control page'''
 
 	#to-do VALIDATE that venue and course are valid values!!!
-	#add a row to the runners table
+
 	sql  = 'INSERT INTO runners '
 	sql += '(venuecode, course, finished) '
 	sql += 'VALUES (?, ?, ?)'
@@ -134,9 +133,9 @@ def init_course(venuecode, course):
 	c = get_db().cursor()
 	c.execute(sql, sqlvals)
 	get_db().commit()
-	#create a session with the id
+
 	session['runnerID'] = c.lastrowid
-	#redirect to the first control
+
 	return redirect(url_for('visit_control',
 							venuecode=venuecode,
 							control=0))
@@ -157,7 +156,16 @@ def visit_control(venuecode, control):
 	runner = query_db("SELECT * FROM runners WHERE id = ?", [runnerid], True)
 	course = query_db("SELECT * FROM courses WHERE venuecode=? AND course=?",
 					  [runner['venuecode'], runner['course']], True)
+
+	#some input validation
+	if (venuecode != runner['venuecode']) or (len(course) == 0)
+		print "SOMETHING HAS GONE WRONG"
+		return redirect(url_for('venue', venuecode=venuecode))
+
+
 	controls = [int(a.strip(',')) for a in str(course['controls']).split()]
+
+
 
 	if (control == controls[0]) and (runner['punch_on_course'] == None):
 		#START case
@@ -207,6 +215,27 @@ def visit_control(venuecode, control):
 						control = str(control),
 						next = str(nextcontrol),
 						message = message)
+
+
+################################################
+# Webapp Debug Routes
+################################################
+
+@app.route('/viewdb')
+def show_runners():
+	runners = query_db('SELECT * FROM runners')
+	if len(runners) == 0:
+		return "oops, looks like the DB is empty."
+	else:
+		rows = [d.values() for d in runners]
+		head = d.keys()
+		return render_template("showdbitems.html", rows=rows, head=head)
+
+
+
+################################################
+# Run the app
+################################################
 
 if __name__ == '__main__':
 	app.run(debug=True)
