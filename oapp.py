@@ -156,17 +156,14 @@ def visit_control(venuecode, control):
 	runner = query_db("SELECT * FROM runners WHERE id = ?", [runnerid], True)
 	course = query_db("SELECT * FROM courses WHERE venuecode=? AND course=?",
 					  [runner['venuecode'], runner['course']], True)
+	controls = [int(a.strip(',')) for a in str(course['controls']).split()]
 
 	#some input validation
 	if (venuecode != runner['venuecode']) or (len(course) == 0)
 		print "SOMETHING HAS GONE WRONG"
 		return redirect(url_for('venue', venuecode=venuecode))
 
-
-	controls = [int(a.strip(',')) for a in str(course['controls']).split()]
-
-
-
+	#evaluate control's validity for this runner
 	if (control == controls[0]) and (runner['punch_on_course'] == None):
 		#START case
 		query_db('UPDATE runners SET punch=?, punch_on_course=? WHERE id=?',
