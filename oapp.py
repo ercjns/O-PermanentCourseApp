@@ -7,7 +7,16 @@
 ################################################
 
 
-#Switching to PostgreSQL for deployment on heroku dev.
+# Switching to PostgreSQL (and flask-sqlalchemy) for deployment on heroku dev.
+# http://blog.y3xz.com/blog/2012/08/16/flask-and-postgresql-on-heroku/
+# http://tech.pro/tutorial/1259/how-to-deploy-simple-and-larger-flask-apps-on-heroku
+
+# >>>from oapp import db
+# >>>db.create_all()
+# >>>from oapp import _fillCourseTable
+# >>>_fillCourseTable()
+
+
 
 
 # imports
@@ -22,8 +31,11 @@ from flask import Flask, render_template, url_for, redirect, g, session
 ################################################
 
 app =  Flask(__name__)
-#app.config['SQLALCHEMY_DATABASE_URL'] = os.environ['DATABASE_URL']
-app.config['SQLALCHEMY_DATABASE_URL'] = 'sqlite:////tmp/test.db'
+#app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
+app.config['DEBUG'] = True
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
+app.config['SECRET_KEY'] = 'My Development Key is Public!'
+
 db = SQLAlchemy(app)
 
 
@@ -40,14 +52,15 @@ class Runner(db.Model):
 	punch_time = db.Column(db.String(100))
 	start_time = db.Column(db.String(100))
 	end_time = db.Column(db.String(100))
-	finished = db.Column(db.Integer)
+	finished = db.Column(db.Boolean)
 
 	def __init__(self, venuecode, course):
 		self.venuecode = venuecode
 		self.course = course
+		self.finished = False
 
 	def __repr__(self):
-		return '<Runner at %s on course %d>' % self.venuecode, self.course
+		return '<RunnerID %d, at %s on course %d>' % (self.id, self.venuecode, self.course)
 
 class Course(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
@@ -59,13 +72,13 @@ class Course(db.Model):
 	climb = db.Column(db.String(20))
 	start = db.Column(db.Integer)
 	controls = db.Column(db.String(100))
-	finish = db.Columb(db.Integer)
+	finish = db.Column(db.Integer)
 
 	def __init__(self, venuecode, venuefull, coursecode, coursefull,
 				distance, climb, start, controls, finish):
 		self.venuecode = venuecode
 		self.venuefull = venuefull
-		self.coursecode = cousecode
+		self.coursecode = coursecode
 		self.coursefull = coursefull
 		self.distance = distance
 		self.climb = climb
@@ -74,7 +87,7 @@ class Course(db.Model):
 		self.finish = finish
 
 	def __repr__(self):
-		return '<course %i at %s>' % self.coursecode, self.venuefull
+		return '<CourseID: %i, %s (%i) at %s>' % (self.id, self.coursefull, self.coursecode, self.venuefull)
 
 
 def _fillCourseTable():
@@ -97,12 +110,12 @@ def _fillCourseTable():
 @app.route('/')
 def index():
 	'''page should display general information about what courses are avaiable'''
-	print "INDEX FUNCTION"
-	### CONVERT THIS DB CALL
-	locs = query_db('SELECT venuecode, venue_fullname FROM courses')
+
+	locs = Course.query.all()
+
 	venues = []
-	for d in locs:
-		venues.append((d['venuecode'], d['venue_fullname']))
+	for l in locs:
+		venues.append((l.venuecode, l.venuefull))
 	venues = list(set(venues))
 
 	return render_template("index.html",
@@ -114,17 +127,18 @@ def venue(venuecode):
 	'''look up the code in the db, get the name + courses, display it
 	if the code is not valid, redirect to a landing page'''
 
-	### CONVERT THIS DB CALL
-	courses = query_db('SELECT venuecode, venue_fullname, course, course_name, distance FROM courses WHERE venuecode = ?', [venuecode])
+	courses = Course.query.filter_by(venuecode=venuecode).all()
 	if len(courses) == 0:
 		#should probably error here, but for now redirect
 		return redirect(url_for('index'))
-	venuename = str(courses[0]['venue_fullname'])
-	venuecode = str(courses[0]['venuecode'])
 
+	venuefull = courses[0].venuefull
+	venuecode = courses[0].venuecode
+
+	# to-do rewrite this template with better course object handling
 	return render_template('venuehome.html',
 							venuecode=venuecode,
-							venuename=venuename,
+							venuename=venuefull,
 							courses = courses)
 
 
@@ -135,19 +149,12 @@ def init_course(venuecode, course):
 
 	#to-do VALIDATE that venue and course are valid values!!!
 
-	### CONVERT THIS DB CALL
-	sql  = 'INSERT INTO runners '
-	sql += '(venuecode, course, finished) '
-	sql += 'VALUES (?, ?, ?)'
-	sqlvals = [venuecode, course, 0]
+	runner = Runner(venuecode, course)
+	print runner.id
+	db.session.add(runner)
+	db.session.commit()
 
-	### CONVERT THIS DB CALL
-	c = get_db().cursor()
-	c.execute(sql, sqlvals)
-	get_db().commit()
-
-	### CONVERT THIS DB CALL
-	session['runnerID'] = c.lastrowid
+	session['runnerID'] = runner.id
 
 	return redirect(url_for('visit_control',
 							venuecode=venuecode,
@@ -166,68 +173,68 @@ def visit_control(venuecode, control):
 	if runnerid == None:
 		return redirect(url_for('venue', venuecode=venuecode))
 
-	### CONVERT THIS DB CALL
-	runner = query_db("SELECT * FROM runners WHERE id = ?", [runnerid], True)
-	### CONVERT THIS DB CALL
-	course = query_db("SELECT * FROM courses WHERE venuecode=? AND course=?",
-					  [runner['venuecode'], runner['course']], True)
-	controls = [int(a.strip(',')) for a in str(course['controls']).split()]
+	runner = Runner.query.filter_by(id=runnerid).first()
+	course = Course.query.filter_by(venuecode=runner.venuecode, coursecode=runner.course).first()
+
+	controls = [int(a) for a in str(course.controls).split(',')]
 
 	#some input validation
-	if (venuecode != runner['venuecode']) or (len(course) == 0)
+	if (venuecode != runner.venuecode) or (course == None):
 		print "SOMETHING HAS GONE WRONG"
 		return redirect(url_for('venue', venuecode=venuecode))
 
 	#evaluate control's validity for this runner
-	if (control == controls[0]) and (runner['punch_on_course'] == None):
+	if (control == controls[0]) and (runner.punch_on_course == None):
 		#START case
-		### CONVERT THIS DB CALL
-		query_db('UPDATE runners SET punch=?, punch_on_course=? WHERE id=?',
-				[control, control, runner['id']])
-		get_db().commit()
+		runner.punch = control
+		runner.punch_on_course = control
+		db.session.commit()
+
 		nextcontrol = controls[1]
 		message = "Just getting started? Good luck and have fun!"
 
-	elif (control == controls[-1]) and (controls.index(runner['punch_on_course']) == len(controls)-2):
+	elif (control == controls[-1]) and (controls.index(runner.punch_on_course) == len(controls)-2):
 		#FINISH case
 		#to-do add a "finished" state to the db so re-loads don't mess up.
-		### CONVERT THIS DB CALL
-		query_db('UPDATE runners SET punch=?, punch_on_course=?, finished=? WHERE id=?',
-				[control, control, 1, runner['id']])
-		get_db().commit()
+
+		runner.punch = control
+		runner.punch_on_course = control
+		runner.finished = True
+		db.session.commit()
+
 		nextcontrol = None
 		message = 'Congrats, you finished!'
 
-	elif runner['finished'] == 1:
+	elif runner.finished == True:
 		#FINISHED case
 		nextcontrol = None
 		url = url_for('venue', venuecode=venuecode)
 		message = 'You already finished. Go to ' + url + ' to try another course.'
 		return 'You already finished. Go to ' + url + ' to try another course.'
 
-	elif (controls.index(control)-1 == controls.index(runner['punch_on_course'])):
+	elif (controls.index(control)-1 == controls.index(runner.punch_on_course)):
 		#on course case
-		### CONVERT THIS DB CALL
-		query_db('UPDATE runners SET punch=?, punch_on_course=? WHERE id=?',
-				[control, control, runner['id']])
-		get_db().commit()
+		runner.punch = control
+		runner.punch_on_course = control
+		db.session.commit()
+
 		nextcontrol = controls[controls.index(control)+1]
 		message = 'Keep going!'
 
 	else:
 		#incorrect case
-		### CONVERT THIS DB CALL
-		query_db('UPDATE runners SET punch=? WHERE id=?', [control, runner['id']])
-		get_db().commit()
-		nextcontrol = controls[controls.index(runner['punch_on_course'])+1]
+		runner.punch = control
+		db.session.commit()
+
+		nextcontrol = controls[controls.index(runner.punch_on_course)+1]
 		message = "You're off course!"
 
 
 	return render_template('controloncourse.html',
-						venuename = str(course['venue_fullname']),
-						venuecode = course['venuecode'],
-						coursename = str(course['course_name']),
-						course = str(course['course']),
+						venuename = course.venuefull,
+						venuecode = course.venuecode,
+						coursename = course.coursefull,
+						course = str(course.coursecode),
 						control = str(control),
 						next = str(nextcontrol),
 						message = message)
@@ -239,14 +246,22 @@ def visit_control(venuecode, control):
 
 @app.route('/viewdb')
 def show_runners():
-	### CONVERT THIS DB CALL
-	runners = query_db('SELECT * FROM runners')
+
+	runners = Runner.query.all()
 	if len(runners) == 0:
 		return "oops, looks like the DB is empty."
 	else:
-		rows = [d.values() for d in runners]
-		head = d.keys()
-		return render_template("showdbitems.html", rows=rows, head=head)
+		return render_template("showdbitems.html", items=runners)
+
+
+@app.route('/viewcoursedb')
+def show_courses():
+
+	courses = Course.query.all()
+	if len(courses) == 0:
+		return "oops, looks like the DB is empty."
+	else:
+		return render_template("showdbitems.html", items=courses)
 
 
 
