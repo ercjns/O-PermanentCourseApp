@@ -110,7 +110,6 @@ def _fillCourseTable():
 @app.route('/')
 def index():
 	'''page should display general information about what courses are avaiable'''
-
 	locs = Course.query.all()
 
 	venues = []
@@ -118,6 +117,7 @@ def index():
 		venues.append((l.venuecode, l.venuefull))
 	venues = list(set(venues))
 
+	# to-do clean this up to pass a list of objects to the template
 	return render_template("index.html",
 							venues=venues)
 
