@@ -31,9 +31,9 @@ from flask import Flask, render_template, url_for, redirect, g, session
 ################################################
 
 app =  Flask(__name__)
-#app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
-app.config['DEBUG'] = True
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
+app.config['DEBUG'] = False
+#app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres:////tmp/test.db'
 app.config['SECRET_KEY'] = 'My Development Key is Public!'
 
 db = SQLAlchemy(app)
@@ -270,4 +270,4 @@ def show_courses():
 ################################################
 
 if __name__ == '__main__':
-	app.run(debug=True)
+	app.run()
