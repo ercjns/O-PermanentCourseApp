@@ -1,1 +1,1 @@
-web: guincorn routes:oapp
+web: gunicorn oapp:app
