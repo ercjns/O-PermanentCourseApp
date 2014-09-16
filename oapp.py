@@ -31,9 +31,9 @@ from flask import Flask, render_template, url_for, redirect, g, session
 ################################################
 
 app =  Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
+#app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
 app.config['DEBUG'] = False
-#app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres:////tmp/test.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://tmp/mydb'
 app.config['SECRET_KEY'] = 'My Development Key is Public!'
 
 db = SQLAlchemy(app)
@@ -169,9 +169,8 @@ def visit_control(venuecode, control):
 	#to-do Case for visiting the same control twice in a row (page reload)
 	#to-do Show a map when you're off course...
 
-	runnerid = session['runnerID']
-	if runnerid == None:
-		return redirect(url_for('venue', venuecode=venuecode))
+	try: runnerid = session['runnerID']
+	except: return redirect(url_for('venue', venuecode=venuecode))
 
 	runner = Runner.query.filter_by(id=runnerid).first()
 	course = Course.query.filter_by(venuecode=runner.venuecode, coursecode=runner.course).first()
@@ -212,6 +211,16 @@ def visit_control(venuecode, control):
 		message = 'You already finished. Go to ' + url + ' to try another course.'
 		return 'You already finished. Go to ' + url + ' to try another course.'
 
+
+	elif (control not in controls) or (controls.index(control)-1 != controls.index(runner.punch_on_course)):
+		#off course case
+		# to-do edit this logic, it's unreadable
+		runner.punch = control
+		db.session.commit()
+
+		nextcontrol = controls[controls.index(runner.punch_on_course)+1]
+		message = "You're off course!"
+
 	elif (controls.index(control)-1 == controls.index(runner.punch_on_course)):
 		#on course case
 		runner.punch = control
@@ -222,13 +231,8 @@ def visit_control(venuecode, control):
 		message = 'Keep going!'
 
 	else:
-		#incorrect case
-		runner.punch = control
-		db.session.commit()
-
-		nextcontrol = controls[controls.index(runner.punch_on_course)+1]
-		message = "You're off course!"
-
+		#something wrong
+		return "something wrong"
 
 	return render_template('controloncourse.html',
 						venuename = course.venuefull,
