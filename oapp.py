@@ -6,19 +6,6 @@
 #    https://github.com/ercjns/o-webapp
 ################################################
 
-
-# Switching to PostgreSQL (and flask-sqlalchemy) for deployment on heroku dev.
-# http://blog.y3xz.com/blog/2012/08/16/flask-and-postgresql-on-heroku/
-# http://tech.pro/tutorial/1259/how-to-deploy-simple-and-larger-flask-apps-on-heroku
-
-# >>>from oapp import db
-# >>>db.create_all()
-# >>>from oapp import _fillCourseTable
-# >>>_fillCourseTable()
-
-
-
-
 # imports
 import os
 from flask.ext.sqlalchemy import SQLAlchemy
@@ -33,7 +20,6 @@ from flask import Flask, render_template, url_for, redirect, g, session
 app =  Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
 app.config['DEBUG'] = False
-#app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://tmp/mydb'
 app.config['SECRET_KEY'] = 'My Development Key is Public!'
 
 db = SQLAlchemy(app)
@@ -155,6 +141,7 @@ def init_course(venuecode, course):
 	db.session.commit()
 
 	session['runnerID'] = runner.id
+	session.permanent = True
 
 	return redirect(url_for('visit_control',
 							venuecode=venuecode,
