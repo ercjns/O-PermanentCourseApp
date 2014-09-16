@@ -31,9 +31,9 @@ from flask import Flask, render_template, url_for, redirect, g, session
 ################################################
 
 app =  Flask(__name__)
-#app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
 app.config['DEBUG'] = False
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://tmp/mydb'
+#app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://tmp/mydb'
 app.config['SECRET_KEY'] = 'My Development Key is Public!'
 
 db = SQLAlchemy(app)
