@@ -18,7 +18,6 @@ To Do
 * record every control visited in db
 * time taken to complete course
 * testing on small devices - make maps look great
-* deploy to a live webserver
 * debug device qr code scanning and sessions
 * potentially integrate with the device compass
 * potentially integrate with the device GPS (for help mode or navigate to start)

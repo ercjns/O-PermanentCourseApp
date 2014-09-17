@@ -1,4 +1,3 @@
 *.pyc
-static/maps
-hello.py
 venv/
+static/maps/old
