@@ -7,7 +7,7 @@
 ################################################
 
 # imports
-import os
+import os, datetime
 from flask.ext.sqlalchemy import SQLAlchemy
 from contextlib import closing
 from flask import Flask, render_template, url_for, redirect, g, session
@@ -17,9 +17,12 @@ from flask import Flask, render_template, url_for, redirect, g, session
 # Create the Flask application, connect to the db
 ################################################
 
+basedir = os.path.abspath(os.path.dirname(__file__))
+
 app =  Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
-app.config['DEBUG'] = False
+# app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'app.db')
+app.config['DEBUG'] = True
 app.config['SECRET_KEY'] = 'My Development Key is Public!'
 
 db = SQLAlchemy(app)
@@ -35,9 +38,9 @@ class Runner(db.Model):
 	course = db.Column(db.Integer)
 	punch = db.Column(db.Integer)
 	punch_on_course = db.Column(db.Integer)
-	punch_time = db.Column(db.String(100))
-	start_time = db.Column(db.String(100))
-	end_time = db.Column(db.String(100))
+	punch_time = db.Column(db.DateTime)
+	start_time = db.Column(db.DateTime)
+	end_time = db.Column(db.DateTime)
 	finished = db.Column(db.Boolean)
 
 	def __init__(self, venuecode, course):
@@ -46,7 +49,7 @@ class Runner(db.Model):
 		self.finished = False
 
 	def __repr__(self):
-		return '<RunnerID %d, at %s on course %d>' % (self.id, self.venuecode, self.course)
+		return '<Runner %d, at %s on course %d, punch %d>' % (self.id, self.venuecode, self.course, self.punch)
 
 class Course(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
@@ -73,7 +76,7 @@ class Course(db.Model):
 		self.finish = finish
 
 	def __repr__(self):
-		return '<CourseID: %i, %s (%i) at %s>' % (self.id, self.coursefull, self.coursecode, self.venuefull)
+		return '<Course %i, %s (%i) at %s>' % (self.id, self.coursefull, self.coursecode, self.venuefull)
 
 
 def _fillCourseTable():
@@ -148,6 +151,14 @@ def init_course(venuecode, course):
 							control=0))
 
 
+@app.route('/<venuecode>/<control>')
+def visit_name(venuecode, name):
+	print('FUNCTION: VISIT NAME', name)
+	#translate a letter or short string into a control code
+	#don't actully re-direct. these are the only way to get credit.
+
+
+
 @app.route('/<venuecode>/<int:control>')
 def visit_control(venuecode, control):
 	print('FUNCTION: VISIT CONTROL', control)
@@ -155,6 +166,9 @@ def visit_control(venuecode, control):
 	#to-do VALIDATE that venuecode and control are valid values
 	#to-do Case for visiting the same control twice in a row (page reload)
 	#to-do Show a map when you're off course...
+
+	now = datetime.datetime.now()
+	print now
 
 	try: runnerid = session['runnerID']
 	except: return redirect(url_for('venue', venuecode=venuecode))
@@ -174,6 +188,8 @@ def visit_control(venuecode, control):
 		#START case
 		runner.punch = control
 		runner.punch_on_course = control
+		runner.punch_time = now
+		runner.start_time = now
 		db.session.commit()
 
 		nextcontrol = controls[1]
@@ -181,28 +197,32 @@ def visit_control(venuecode, control):
 
 	elif (control == controls[-1]) and (controls.index(runner.punch_on_course) == len(controls)-2):
 		#FINISH case
-		#to-do add a "finished" state to the db so re-loads don't mess up.
-
 		runner.punch = control
 		runner.punch_on_course = control
+		runner.punch_time = now
 		runner.finished = True
+		runner.end_time = now
 		db.session.commit()
 
+		delta = runner.end_time - runner.start_time
+
 		nextcontrol = None
-		message = 'Congrats, you finished!'
+		message = 'Congrats, you finished! Your time was: ' + str(delta)
 
 	elif runner.finished == True:
 		#FINISHED case
 		nextcontrol = None
+		print runner.end_time - runner.start_time
 		url = url_for('venue', venuecode=venuecode)
 		message = 'You already finished. Go to ' + url + ' to try another course.'
-		return 'You already finished. Go to ' + url + ' to try another course.'
+		return 'You already finished. Go to ' + url_for('venue', venuecode=venuecode) + ' to try another course.'
 
 
 	elif (control not in controls) or (controls.index(control)-1 != controls.index(runner.punch_on_course)):
 		#off course case
 		# to-do edit this logic, it's unreadable
 		runner.punch = control
+		runner.punch_time = now
 		db.session.commit()
 
 		nextcontrol = controls[controls.index(runner.punch_on_course)+1]
@@ -212,6 +232,7 @@ def visit_control(venuecode, control):
 		#on course case
 		runner.punch = control
 		runner.punch_on_course = control
+		runner.punch_time = now
 		db.session.commit()
 
 		nextcontrol = controls[controls.index(control)+1]
