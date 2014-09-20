@@ -20,9 +20,9 @@ from flask import Flask, render_template, url_for, redirect, g, session
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 app =  Flask(__name__)
-# app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'app.db')
-app.config['DEBUG'] = True
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
+#app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'app.db')
+app.config['DEBUG'] = False
 app.config['SECRET_KEY'] = 'My Development Key is Public!'
 
 db = SQLAlchemy(app)
