@@ -109,6 +109,7 @@ def visit_control(venuecode, control):
 
 	#evaluate control's validity for this runner
 	if (control == controls[0]) and (runner.punch_on_course == None):
+		print "START CASE"
 		#START case
 		runner.punch = control
 		runner.punch_on_course = control
@@ -120,6 +121,7 @@ def visit_control(venuecode, control):
 		message = "Just getting started? Good luck and have fun!"
 
 	elif (control == controls[-1]) and (controls.index(runner.punch_on_course) == len(controls)-2):
+		print "FINISH CASE"
 		#FINISH case
 		runner.punch = control
 		runner.punch_on_course = control
@@ -133,6 +135,7 @@ def visit_control(venuecode, control):
 		message = 'Congrats, you finished! Your time was: ' + str(delta)
 
 	elif runner.finished == True:
+		print "COURSE COMPLETED"
 		#FINISHED case
 		nextcontrol = None
 		url = url_for('venue', venuecode=venuecode)
@@ -141,6 +144,7 @@ def visit_control(venuecode, control):
 
 
 	elif (control not in controls) or (controls.index(control)-1 != controls.index(runner.punch_on_course)):
+		print "OFF COURSE"
 		#off course case
 		# to-do edit this logic, it's unreadable
 		runner.punch = control
@@ -151,6 +155,7 @@ def visit_control(venuecode, control):
 		message = "You're off course!"
 
 	elif (controls.index(control)-1 == controls.index(runner.punch_on_course)):
+		print "ON COURSE"
 		#on course case
 		runner.punch = control
 		runner.punch_on_course = control
@@ -161,6 +166,7 @@ def visit_control(venuecode, control):
 		message = 'Keep going!'
 
 	else:
+		print "SOMETHING WRONG"
 		#something wrong
 		return "something wrong"
 
