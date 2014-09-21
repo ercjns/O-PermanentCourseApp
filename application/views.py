@@ -104,12 +104,10 @@ def visit_control(venuecode, control):
 
 	#some input validation
 	if (venuecode != runner.venuecode) or (course == None):
-		print "SOMETHING HAS GONE WRONG"
 		return redirect(url_for('venue', venuecode=venuecode))
 
 	#evaluate control's validity for this runner
 	if (control == controls[0]) and (runner.punch_on_course == None):
-		print "START CASE"
 		#START case
 		runner.punch = control
 		runner.punch_on_course = control
@@ -124,17 +122,13 @@ def visit_control(venuecode, control):
 		print "FINISH CASE"
 		#FINISH case
 		runner.punch = control
-		print "punched last control"
 		runner.punch_on_course = control
-		print "punched last control on course"
 		runner.punch_time = now
-		print "set puch time"
 		runner.finished = True
-		print "set finish flag"
 		runner.end_time = now
 		print "set end time"
-		delta = runner.end_time - runner.start_time
-		print "computed timedelta"
+		delta = now - runner.start_time #don't use end-time because it is not yet set.
+		print "computed delta"
 		db.session.commit()
 		print "committed to db"
 
