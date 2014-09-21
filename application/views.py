@@ -124,15 +124,24 @@ def visit_control(venuecode, control):
 		print "FINISH CASE"
 		#FINISH case
 		runner.punch = control
+		print "punched last control"
 		runner.punch_on_course = control
+		print "punched last control on course"
 		runner.punch_time = now
+		print "set puch time"
 		runner.finished = True
+		print "set finish flag"
 		runner.end_time = now
+		print "set end time"
 		delta = runner.end_time - runner.start_time
+		print "computed timedelta"
 		db.session.commit()
+		print "committed to db"
 
 		nextcontrol = None
+		print "set nextcontrol"
 		message = 'Congrats, you finished! Your time was: ' + str(delta)
+		print "set message"
 
 	elif runner.finished == True:
 		print "COURSE COMPLETED"
@@ -169,6 +178,9 @@ def visit_control(venuecode, control):
 		print "SOMETHING WRONG"
 		#something wrong
 		return "something wrong"
+
+
+	print "preparing to render template"
 
 	return render_template('controloncourse.html',
 						venuename = course.venuefull,
