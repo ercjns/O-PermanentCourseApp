@@ -21,7 +21,11 @@ class Runner(db.Model):
 		self.finished = False
 
 	def __repr__(self):
-		return '<Runner %d, at %s on course %d, punch %d>' % (self.id, self.venuecode, self.course, self.punch)
+		try:
+			return '<Runner %d, at %s on course %d, punch %d>' % (self.id, self.venuecode, self.course, self.punch)
+		except:
+			return '<Runner %d, at %s>' % (self.id, self.venuecode)
+		
 
 class Course(db.Model):
 	id = db.Column(db.Integer, primary_key=True)

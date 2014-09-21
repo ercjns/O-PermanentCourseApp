@@ -126,9 +126,8 @@ def visit_control(venuecode, control):
 		runner.punch_time = now
 		runner.finished = True
 		runner.end_time = now
-		db.session.commit()
-
 		delta = runner.end_time - runner.start_time
+		db.session.commit()
 
 		nextcontrol = None
 		message = 'Congrats, you finished! Your time was: ' + str(delta)
@@ -182,7 +181,7 @@ def visit_control(venuecode, control):
 @app.route('/viewdb')
 def show_runners():
 
-	runners = Runner.query.all()
+	runners = Runner.query.order_by(Runner.id).all()
 	if len(runners) == 0:
 		return "oops, looks like the DB is empty."
 	else:
