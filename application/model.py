@@ -1,7 +1,4 @@
-
-
-
-from oapp import db
+from application import db
 
 ################################################
 # Set up the databases, define database access functions

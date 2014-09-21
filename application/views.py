@@ -7,27 +7,13 @@
 ################################################
 
 # imports
-import configurations
+
+from application import app
 from model import *
 import os, datetime
-from flask.ext.sqlalchemy import SQLAlchemy
-from flask import Flask, render_template, url_for, redirect, g, session
+from flask import render_template, url_for, redirect, session
 # to-do reimplement closing?
 
-
-################################################
-# Create the Flask application, set the environment
-################################################
-
-app =  Flask(__name__)
-
-app.config.from_object(configurations.Config)
-if os.environ['FLASK_ENV'] == 'PRODUCTION':
-	app.config.from_object(configurations.ProductionConfig)
-elif os.environ['FLASK_ENV'] == 'DEVELOPMENT':
-	app.config.from_object(configurations.DevelopmentConfig)
-
-db = SQLAlchemy(app)
 
 
 ################################################
