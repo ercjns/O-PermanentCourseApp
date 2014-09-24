@@ -129,10 +129,13 @@ def visit_control(venuecode, control):
 		runner.punch_time = now
 		runner.finished = True
 		runner.end_time = now
-		print "set end time"
-		print type(now), now
-		print type(runner.start_time), runner.start_time
-		# to do: fix this! only breaking on heroku? why? local postgresql is ok...
+
+		#local db has runner.start_time as type:datetime.datetime
+		#HerokuPostgres has runner.start_time as type:unicode
+
+		if type(runner.start_time) != datetime.datetime:
+			runner.start_time = datetime.datetime.strptime(runner.start_time, '%Y-%m-%d %H:%M:%S.%f')
+
 		delta = now - runner.start_time #don't use end-time because it is not yet set?
 		print "computed delta"
 		db.session.commit()
