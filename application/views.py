@@ -42,9 +42,11 @@ def venue(venuecode):
 	if the code is not valid, redirect to a landing page'''
 
 	courses = Course.query.filter_by(venuecode=venuecode).all()
-	if len(courses) == 0:
+	coursesN = len(courses)
+	if coursesN == 0:
 		#should probably error here, but for now redirect
 		return redirect(url_for('index'))
+
 
 	venuefull = courses[0].venuefull
 	venuecode = courses[0].venuecode
@@ -53,6 +55,7 @@ def venue(venuecode):
 	return render_template('venuehome.html',
 							venuecode=venuecode,
 							venuename=venuefull,
+							coursesN = coursesN,
 							courses = courses)
 
 
@@ -137,22 +140,28 @@ def visit_control(venuecode, control):
 			runner.start_time = datetime.datetime.strptime(runner.start_time, '%Y-%m-%d %H:%M:%S.%f')
 
 		delta = now - runner.start_time #don't use end-time because it is not yet set?
-		print "computed delta"
 		db.session.commit()
-		print "committed to db"
 
-		nextcontrol = None
-		print "set nextcontrol"
 		message = 'Congrats, you finished! Your time was: ' + str(delta)
-		print "set message"
+
+		return render_template('finished.html',
+							venuename = course.venuefull,
+							venuecode = course.venuecode,
+							coursename = course.coursefull,
+							course = str(course.coursecode),
+							message = message)
 
 	elif runner.finished == True:
 		print "COURSE COMPLETED"
 		#FINISHED case
-		nextcontrol = None
-		url = url_for('venue', venuecode=venuecode)
-		message = 'You already finished. Go to ' + url + ' to try another course.'
-		return 'You already finished. Go to ' + url_for('venue', venuecode=venuecode) + ' to try another course.'
+		message = 'You already finished. Go home to try another course'
+
+		return render_template('finished.html',
+							venuename = course.venuefull,
+							venuecode = course.venuecode,
+							coursename = course.coursefull,
+							course = str(course.coursecode),
+							message = message)
 
 
 	elif (control not in controls) or (controls.index(control)-1 != controls.index(runner.punch_on_course)):
@@ -165,6 +174,15 @@ def visit_control(venuecode, control):
 
 		nextcontrol = controls[controls.index(runner.punch_on_course)+1]
 		message = "You're off course!"
+
+		return render_template('controloffcourse.html',
+							venuename = course.venuefull,
+							venuecode = course.venuecode,
+							coursename = course.coursefull,
+							course = str(course.coursecode),
+							control = str(control),
+							next = str(nextcontrol),
+							message = message)
 
 	elif (controls.index(control)-1 == controls.index(runner.punch_on_course)):
 		print "ON COURSE"

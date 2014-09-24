@@ -1,0 +1,8 @@
+{% extends "layout.html" %}
+{% block title %} - Course Finished!{% endblock %}
+{% block content %}
+<h3><em>{{ coursename }}</em> at {{ venuename }}.</h3>
+<p>{{ message }}
+<p><a href={{ url_for('static', filename="maps/"+venuecode+"_c"+course+".png") }}> See the full map</a>
+<p><a href={{ url_for('venue', venuecode=venuecode) }}>Back to Home</a>
+{% endblock %}
