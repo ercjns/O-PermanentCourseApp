@@ -8,16 +8,15 @@
 
 import os
 
-
 try:
 	dburl = os.environ['DATABASE_URL']
 except:
-	basedir = os.path.abspath(os.path.dirname(__file__))
-	dburl = 'sqlite:///' + os.path.join(basedir, 'app.db')
+	dburl = 'postgresql://postgres:postgresPW!@localhost/postgres'
 
 #need to figure out if there's a better way around the database URL key error
 #implemented this way because localhost env (dev) doesn't have this key
 #and it would throw an error at import/runtime
+#not sure if it makes sense to add that env variable to the local machine
 
 class Config(object):
 	DEBUG = False

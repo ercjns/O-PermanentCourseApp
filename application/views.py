@@ -8,8 +8,9 @@
 
 # imports
 
-from application import app
-from model import *
+#to-do better way to access the db, these imports feel wrong
+from application import app, db
+from model import Runner, Course
 import os, datetime
 from flask import render_template, url_for, redirect, session
 # to-do reimplement closing?
@@ -80,6 +81,8 @@ def visit_name(venuecode, name):
 	print('FUNCTION: VISIT NAME', name)
 	#translate a letter or short string into a control code
 	#don't actully re-direct. these are the only way to get credit.
+	#where is the mapping stored? How easy is it to update?
+	#explore refactoring the visit logic
 
 
 
@@ -127,7 +130,10 @@ def visit_control(venuecode, control):
 		runner.finished = True
 		runner.end_time = now
 		print "set end time"
-		delta = now - runner.start_time #don't use end-time because it is not yet set.
+		print type(now), now
+		print type(runner.start_time), runner.start_time
+		# to do: fix this! only breaking on heroku? why? local postgresql is ok...
+		delta = now - runner.start_time #don't use end-time because it is not yet set?
 		print "computed delta"
 		db.session.commit()
 		print "committed to db"
@@ -208,12 +214,3 @@ def show_courses():
 		return "oops, looks like the DB is empty."
 	else:
 		return render_template("showdbitems.html", items=courses)
-
-
-
-################################################
-# Run the app
-################################################
-
-if __name__ == '__main__':
-	app.run()
