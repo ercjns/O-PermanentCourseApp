@@ -18,7 +18,6 @@ To Do
 * record every control visited in db
 * time taken to complete course
 * testing on small devices - make maps look great
-* deploy to a live webserver
 * debug device qr code scanning and sessions
 * potentially integrate with the device compass
 * potentially integrate with the device GPS (for help mode or navigate to start)
@@ -29,6 +28,14 @@ To Do
 Architecture
 ------------
 This project uses the [Flask](http://flask.pocoo.org/) python framework and is backed up by a SQLite DB, because that's what Flask recommended.
+
+
+Notes To Myself
+---------------
+To run locally:
+ 1. set the environment variable FLASK_ENV='DEVELOPMENT'
+ 2. foreman start OR python run.py
+ 3. visit http://127.0.0.1:5000/
 
 
 Mumbo-Jumbo

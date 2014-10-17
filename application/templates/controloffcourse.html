@@ -1,0 +1,9 @@
+{% extends "layout.html" %}
+{% block title %} - Control {{ control }}{% endblock %}
+{% block content %}
+<h3><em>{{ coursename }}</em> at {{ venuename }}.</h3>
+<p><strong>Navigate to control {{ next }}.</strong>
+<p><img src={{ url_for('static', filename="maps/"+venuecode+"_c"+course+".png") }} >
+<p>You're off course at control {{ control }}. Try to get back on course! {{ message }}
+<p><a href={{ url_for('venue', venuecode=venuecode) }}>Start over</a>
+{% endblock %}
