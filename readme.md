@@ -30,6 +30,14 @@ Architecture
 This project uses the [Flask](http://flask.pocoo.org/) python framework and is backed up by a SQLite DB, because that's what Flask recommended.
 
 
+Notes To Myself
+---------------
+To run locally:
+ 1. set the environment variable FLASK_ENV='DEVELOPMENT'
+ 2. foreman start OR python run.py
+ 3. visit http://127.0.0.1:5000/
+
+
 Mumbo-Jumbo
 -----------
 Work in this repository is licensed under the [MIT License](http://mit-license.org/)
