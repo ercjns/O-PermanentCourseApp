@@ -11,23 +11,24 @@ Features
 * Show a map to the next control from previous control (in progress)
 * Finish a course
 * Show map of the full venue
+* Report the time taken to complete course
 
 To Do
 -----
+* Migrate to using secret codes rather than control numbers.
 * error handling and data validation
 * record every control visited in db
-* time taken to complete course
 * testing on small devices - make maps look great
 * debug device qr code scanning and sessions
-* potentially integrate with the device compass
-* potentially integrate with the device GPS (for help mode or navigate to start)
+* integrate with the device compass?
+* integrate with the device GPS? (for help mode or navigate to start)
 * support more courses
 * show data from previous orienteers
 
 
 Architecture
 ------------
-This project uses the [Flask](http://flask.pocoo.org/) python framework and is backed up by a SQLite DB, because that's what Flask recommended.
+This project uses the [Flask](http://flask.pocoo.org/) python framework. It is deployed and running on Heroku, with a database in Heroku's PosgreSQL db.
 
 
 Notes To Myself
